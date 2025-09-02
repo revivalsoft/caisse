@@ -1,0 +1,28 @@
+<div id="ticket-container">
+	<h2>Ticket</h2>
+	<div id="table-id-holder" style="display:none"></div>
+	{# utile pour afficher table selectionnée si besoin #}
+	<table id="ticket">
+		<thead>
+			<tr>
+				<th>Produit</th>
+				<th>Qté</th>
+				<th>Prix TTC</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody></tbody>
+		<tfoot>
+			<tr>
+				<td colspan="2">Total</td>
+				<td id="total">€ 0.00</td>
+				<td></td>
+			</tr>
+		</tfoot>
+	</table>
+
+	<div class="ticket-buttons">
+		<button class="clear-ticket">Vider le ticket</button>
+		<button class="validate-ticket">Valider la commande</button>
+	</div>
+</div>

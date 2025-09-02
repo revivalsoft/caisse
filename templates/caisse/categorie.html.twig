@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+{% block title %}
+	{{ categorie.nom }}
+	—
+	{{ table.nom }}
+{% endblock %}
+{% block body %}
+	<div id="table-context" data-table="{{ table.id }}"></div>
+
+	<h1>{{ categorie.nom }}
+		—
+		{{ table.nom }}</h1>
+	<div class="produits">
+		{% for produit in produits %}
+			<div class="produit" data-id="{{ produit.id }}" data-nom="{{ produit.nom }}" data-prixttc="{{ produit.getPrixTTC() }}" data-table="{{ table.id }}">
+				{{ produit.nom }}<br>€
+				{{ produit.getPrixTTC()|number_format(2, '.', ',') }}
+			</div>
+		{% else %}
+			<p>Aucun produit</p>
+		{% endfor %}
+	</div>
+
+	<p>
+		<a href="{{ path('caisse_table', {'id': table.id}) }}">← Retour</a>
+	</p>
+{% endblock %}

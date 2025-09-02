@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Caisse - Table
+	{{ table.nom }}
+{% endblock %}
+
+{% block body %}
+	<div class="caisse-wrapper">
+		<div class="produits-section">
+			<a href="{{ path('caisse_tables') }}" class="btn-retour">← Retour aux tables</a>
+			<h2>Table
+				{{ table.nom }}</h2>
+
+			<div class="produits-container">
+				{% for categorie in categories %}
+					<h3>{{ categorie.nom }}</h3>
+					<div class="produits-grid">
+						{% for produit in categorie.produits %}
+							<button class="btn-produit" data-id="{{ produit.id }}" data-nom="{{ produit.nom }}" data-prix="{{ produit.prixTTC }}">
+								{{ produit.nom }}<br>
+								{{ produit.prixTTC|number_format(2, ',', ' ') }}
+								€
+							</button>
+						{% endfor %}
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+
+		<div class="ticket-section">
+			<h3>Ticket</h3>
+			<ul id="ticket-list"></ul>
+			<p>Total TTC :
+				<span id="total">0,00 €</span>
+			</p>
+			<form action="{{ path('caisse_valider', {id: table.id}) }}" method="post">
+				<input type="hidden" name="ticket" id="ticket-input">
+				<button type="submit" class="btn-valider">Valider</button>
+			</form>
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+.caisse-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+.left-panel {
+    flex: 2;
+}
+
+.right-panel {
+    flex: 1;
+    background: #fff;
+    padding: 10px;
+    border-radius: 6px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.categories,
+.produits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.btn-categorie,
+.btn-produit {
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-categorie {
+    background: #007bff;
+    color: white;
+}
+
+.btn-produit {
+    background: #28a745;
+    color: white;
+}
+
+#ticket table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#ticket th,
+#ticket td {
+    padding: 6px;
+    border-bottom: 1px solid #ddd;
+}
