@@ -2,53 +2,35 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
 	<div
 		class="container-fluid">
-		{# <a class="navbar-brand fw-bold" href="{{ path('homepage') }}">Caisse Restaurant</a> #}
+		<!-- Logo ou titre visible sur tous les écrans -->
+		<a class="navbar-brand fw-bold" href="{{ path('caisse_tables') }}">Caisse Restaurant</a>
+
+		<!-- Bouton hamburger pour petits écrans -->
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
 
+		<!-- Menu -->
 		<div class="collapse navbar-collapse" id="navbarMenu">
-			<ul
-				class="navbar-nav me-auto mb-2 mb-lg-0">
-				{# Accès admin EasyAdmin #}
+			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 				<li class="nav-item">
 					<a class="nav-link" href="{{ path('admin') }}">Admin</a>
 				</li>
-
-				{# Accès aux tables #}
-			{# <li class="nav-item">
-											<a class="nav-link" href="{{ path('app_caisse_tables') }}">Tables</a>
-										</li> #}
-
-				{# Rapports / statistiques #}
-				{# <li class="nav-item">
-													<a class="nav-link" href="{{ path('app_caisse_stats') }}">Statistiques</a>
-												</li> #}
-
-				{# Paramètres / configuration #}
-				{# <li class="nav-item">
-													<a class="nav-link" href="{{ path('app_caisse_settings') }}">Paramètres</a>
-												</li> #}
+				<li class="nav-item">
+					<a class="nav-link" href="{{ path('app_commandes') }}">Commandes</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="{{ path('reporting_index') }}">Reporting</a>
+				</li>
 			</ul>
 
-			{# Optionnel : connexion utilisateur / profil #}
+			{# Optionnel : bouton ou info à droite #}
 			{# <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-										{% if app.user %}
-											<li class="nav-item dropdown">
-												<a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-													{{ app.user.username }}
-												</a>
-												<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-													<li>
-														<a class="dropdown-item" href="{{ path('app_logout') }}">Se déconnecter</a>
-													</li>
-												</ul>
-											</li>
-										{% else %}
-											<li class="nav-item">
-												<a class="nav-link" href="{{ path('app_login') }}">Connexion</a>
-											</li>
-										{% endif %}
+										<li class="nav-item">
+											<span class="navbar-text text-light">
+												{{ restaurant.nom }}
+											</span>
+										</li>
 									</ul> #}
 		</div>
 	</div>

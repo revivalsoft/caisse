@@ -14,11 +14,11 @@ Son utilisation pour émettre des factures légalement en France est **interdite
 ## Usage recommandé
 - Formation et apprentissage
 - Simulations ou tests
-- Marchés étrangers où la certification NF525 n’est pas requise
+- Marchés étrangers où une certification n’est pas requise
 
 ## Contribution
 Les contributions sont les bienvenues ! Merci de respecter le code de conduite.
 
 ## Licence
-Ce logiciel est distribué sous licence MIT. L’usage commercial est autorisé **à vos risques et périls** concernant la conformité fiscale.
+Ce logiciel est distribué sous licence GNU General Public License version 3 (GPL v3). L’usage commercial est autorisé **à vos risques et périls** concernant la conformité fiscale.
 

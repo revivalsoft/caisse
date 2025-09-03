@@ -6,6 +6,7 @@ use App\Entity\Categorie;
 use App\Entity\Produit;
 use App\Entity\TauxTva;
 use App\Entity\TableRestaurant;
+use App\Entity\Restaurant;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
@@ -36,6 +37,9 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Produits', 'fa fa-box', Produit::class);
         yield MenuItem::linkToCrud('Taux TVA', 'fa fa-percent', TauxTva::class);
         yield MenuItem::linkToCrud('Tables du restaurant', 'fas fa-chair', TableRestaurant::class);
+        yield MenuItem::linkToCrud('Restaurant', 'fas fa-utensils', Restaurant::class);
+
+        yield MenuItem::section();
 
         yield MenuItem::linkToUrl('Accès au restaurant', 'fas fa-globe', $this->generateUrl('caisse_tables'));
     }

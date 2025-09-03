@@ -8,14 +8,14 @@
 	<div
 		class="container my-4">
 
-		{# Affichage du nom de la table sélectionnée #}
+		{# Nom de la table sélectionnée #}
 		<div id="table-name" class="text-center fw-bold fs-3 text-primary my-3"></div>
 
 		{# Section tables #}
-		<div id="tables-section" class="row">
+		<div id="tables-section" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
 			{% for table in tables %}
-				<div class="col-3 mb-3">
-					<button class="btn btn-outline-primary btn-table w-100" data-id="{{ table.id }}">
+				<div class="col d-flex">
+					<button class="btn btn-outline-primary btn-table w-100 py-3 fs-5 align-self-stretch" data-id="{{ table.id }}">
 						<span class="table-label">{{ table.nom }}</span>
 					</button>
 				</div>
@@ -23,27 +23,34 @@
 		</div>
 
 		{# Section catégories #}
-		<div id="categories-section" class="row d-none">
-			{% for categorie in categories %}
-				<div class="col-3 mb-3">
-					<button class="btn btn-outline-success btn-cat w-100" data-id="{{ categorie.id }}">
-						{{ categorie.nom }}
-					</button>
-				</div>
-			{% endfor %}
-			<div class="col-12 my-2">
-				<button class="btn btn-secondary" id="back-to-tables">Retour aux tables</button>
+		<div
+			id="categories-section" class="d-none mt-3">
+
+			{# Bouton "Retour aux tables" au-dessus des catégories #}
+			<div class="mb-3">
+				<button class="btn btn-secondary w-100 py-2 fw-bold" id="back-to-tables">Retour aux tables</button>
 			</div>
+
+			{# Grille des catégories #}
+			<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+				{% for categorie in categories %}
+					<div class="col d-flex">
+						<button class="btn btn-success btn-cat w-100 py-2 fw-bold text-white align-self-stretch" data-id="{{ categorie.id }}">
+							{{ categorie.nom }}
+						</button>
+					</div>
+				{% endfor %}
+			</div>
+
 		</div>
 
-		{# Section produits par catégorie (initialement masquée) #}
+		{# Section produits par catégorie #}
 		{% for categorie in categories %}
-			<div id="cat-{{ categorie.id }}" class="row mb-3 d-none">
+			<div id="cat-{{ categorie.id }}" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3 mb-3 d-none mt-3">
 				{% for produit in categorie.produits %}
-					<div class="col-3 mb-2">
-						<button class="btn btn-outline-warning btn-produit w-100" data-id="{{ produit.id }}" data-nom="{{ produit.nom }}" data-prixttc="{{ produit.prixTTC }}">
-							{{ produit.nom }}
-							- €
+					<div class="col d-flex">
+						<button class="btn btn-warning btn-produit w-100 py-2 fw-bold align-self-stretch" data-id="{{ produit.id }}" data-nom="{{ produit.nom }}" data-prixttc="{{ produit.prixTTC }}">
+							{{ produit.nom }}<br>€
 							{{ produit.prixTTC|number_format(2, ',', ' ') }}
 						</button>
 					</div>
@@ -55,10 +62,9 @@
 		<div id="ticket-container" class="mt-4 d-none">
 			<h4>Ticket</h4>
 			<div id="ticket" class="border p-3 mb-3 bg-light"></div>
-			<button class="btn btn-primary w-100" id="save-ticket-btn">Enregistrer la commande</button>
+			<button class="btn btn-primary w-100 py-3 fs-5" id="save-ticket-btn">Enregistrer la commande</button>
 		</div>
 
 	</div>
-
 
 {% endblock %}

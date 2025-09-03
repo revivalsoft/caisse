@@ -1,0 +1,67 @@
+{% extends 'base_commandes.html.twig' %}
+
+{% block title %}Détails de la commande
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4">
+		<h1>Détails de la Commande #{{ commande.id }}</h1>
+
+		{% for label, messages in app.flashes %}
+			{% for message in messages %}
+				<div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+					{{ message }}
+					<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+				</div>
+			{% endfor %}
+		{% endfor %}
+
+		<p>
+			<strong>Table :</strong>
+			{{ commande.table.nom }}</p>
+		<p>
+			<strong>Date :</strong>
+			{{ commande.date|date('d/m/Y H:i') }}</p>
+
+		<h3>Produits</h3>
+		<table class="table table-bordered table-striped table-responsive">
+			<thead class="table-light">
+				<tr>
+					<th>Produit</th>
+					<th>Quantité</th>
+					<th>Prix unitaire TTC</th>
+					<th>Total TTC</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% set totalTTC = 0 %}
+				{% for produit in commande.produits %}
+					{% set quantite = commande.quantites[produit.id] ?? 1 %}
+					{% set prixTTC = produit.prixHT * (1 + produit.tauxTva.taux / 100) %}
+					{% set totalProduit = prixTTC * quantite %}
+					{% set totalTTC = totalTTC + totalProduit %}
+					<tr>
+						<td>{{ produit.nom }}</td>
+						<td>{{ quantite }}</td>
+						<td>€
+							{{ prixTTC|number_format(2, ',', ' ') }}</td>
+						<td>€
+							{{ totalProduit|number_format(2, ',', ' ') }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+			<tfoot>
+				<tr>
+					<th colspan="3" class="text-end">Total TTC</th>
+					<th>€
+						{{ totalTTC|number_format(2, ',', ' ') }}</th>
+				</tr>
+			</tfoot>
+		</table>
+
+		<a href="{{ path('app_commande_reimprimer', {id: commande.id}) }}" class="btn btn-success mt-3">
+			🖨 Réimprimer le ticket
+		</a>
+		<a href="{{ path('app_commandes') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
+	</div>
+{% endblock %}

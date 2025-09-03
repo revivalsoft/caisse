@@ -1,0 +1,192 @@
+{% extends 'base_commandes.html.twig' %}
+
+{% block title %}Reporting Interactif avec Couleurs
+{% endblock %}
+
+{% block body %}
+	<h1>Reporting Interactif des Commandes</h1>
+
+	<form method="get" class="mb-4 row g-2 align-items-end">
+		<div class="col-auto">
+			<label for="start" class="form-label">Date début</label>
+			<input type="date" name="start" id="start" value="{{ start }}" class="form-control">
+		</div>
+		<div class="col-auto">
+			<label for="end" class="form-label">Date fin</label>
+			<input type="date" name="end" id="end" value="{{ end }}" class="form-control">
+		</div>
+		<div class="col-auto">
+			<button type="submit" class="btn btn-primary">Filtrer</button>
+		</div>
+	</form>
+
+	<div
+		class="row" style="height:80vh;">
+		<!-- ✅ Colonne gauche sticky et scrollable -->
+		<div class="col-lg-6" style="position: sticky; top: 0; align-self: flex-start; max-height: 80vh; overflow-y: auto; background: #fff; padding-right:10px; z-index:1;">
+			<div class="mb-3">
+				<label for="graphTypeLeft" class="form-label">Afficher les totaux :</label>
+				<select id="graphTypeLeft" class="form-select mb-3">
+					<option value="jour" selected>Par Jour</option>
+					<option value="mois">Par Mois</option>
+					<option value="categorie">Par Catégorie</option>
+				</select>
+			</div>
+			<div id="tablesContainer"></div>
+		</div>
+
+		<!-- ✅ Colonne droite : graphique -->
+		<div class="col-lg-6" style="overflow-y:auto;">
+			<canvas id="chartUnique" height="400"></canvas>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script>
+		// Données JSON brutes
+const dataParJourRaw = {{ totauxParJour|json_encode|raw }};
+const dataParMoisRaw = {{ totauxParMois|json_encode|raw }};
+const dataParCategorieRaw = {{ totauxParCategorie|json_encode|raw }};
+
+// Fonction pour générer des couleurs aléatoires
+function getRandomColor() {
+const r = Math.floor(Math.random() * 200) + 30;
+const g = Math.floor(Math.random() * 200) + 30;
+const b = Math.floor(Math.random() * 200) + 30;
+return `rgba(${r},${g},${b},0.6)`;
+}
+
+// Fonction pour extraire labels/HT/TTC et formater les dates
+function extractChartData(data, type) {
+const labels = [];
+const HT = [];
+const TTC = [];
+const colors = [];
+for (const key in data) {
+if (data.hasOwnProperty(key)) {
+let label = key;
+if (type === 'jour') {
+const d = new Date(key);
+label = ('0' + d.getDate()).slice(-2) + '/' + (
+'0' + (
+d.getMonth() + 1
+)
+).slice(-2) + '/' + d.getFullYear();
+}
+labels.push(label);
+HT.push(data[key].HT);
+TTC.push(data[key].TTC);
+if (type === 'categorie') 
+colors.push(getRandomColor());
+
+
+}
+}
+return {labels, HT, TTC, colors};
+}
+
+let chartInstance = null;
+
+// Fonction pour créer le graphique
+function renderChart(data, type) {
+const ctx = document.getElementById('chartUnique').getContext('2d');
+if (chartInstance) 
+chartInstance.destroy();
+
+
+
+const chartData = extractChartData(data, type);
+
+const datasets = [];
+if (type === 'categorie') {
+datasets.push({
+label: 'HT (€)',
+data: chartData.HT,
+backgroundColor: chartData.colors,
+borderColor: chartData.colors.map(c => c.replace('0.6', '1')),
+borderWidth: 1
+});
+datasets.push({
+label: 'TTC (€)',
+data: chartData.TTC,
+backgroundColor: chartData.colors.map(c => c.replace('0.6', '0.3')),
+borderColor: chartData.colors.map(c => c.replace('0.6', '1')),
+borderWidth: 1
+});
+} else {
+datasets.push({
+label: 'HT (€)',
+data: chartData.HT,
+backgroundColor: 'rgba(54,162,235,0.6)',
+borderColor: 'rgba(54,162,235,1)',
+borderWidth: 1
+});
+datasets.push({
+label: 'TTC (€)',
+data: chartData.TTC,
+backgroundColor: 'rgba(255,99,132,0.6)',
+borderColor: 'rgba(255,99,132,1)',
+borderWidth: 1
+});
+} chartInstance = new Chart(ctx, {
+type: 'bar',
+data: {
+labels: chartData.labels,
+datasets: datasets
+},
+options: {
+responsive: true,
+scales: {
+y: {
+beginAtZero: true
+}
+}
+}
+});
+}
+
+// Fonction pour afficher le tableau
+function renderTable(data, type) {
+let html = '<table class="table table-bordered table-sm"><thead><tr><th>Libellé</th><th>HT</th><th>TTC</th></tr></thead><tbody>';
+for (const key in data) {
+if (data.hasOwnProperty(key)) {
+let label = key;
+if (type === 'jour') {
+const d = new Date(key);
+label = ('0' + d.getDate()).slice(-2) + '/' + (
+'0' + (
+d.getMonth() + 1
+)
+).slice(-2) + '/' + d.getFullYear();
+}
+html += `<tr><td>${label}</td><td>${
+data[key].HT.toFixed(2)
+} €</td><td>${
+data[key].TTC.toFixed(2)
+} €</td></tr>`;
+}
+}
+html += '</tbody></table>';
+document.getElementById('tablesContainer').innerHTML = html;
+}
+
+// Initialisation
+renderChart(dataParJourRaw, 'jour');
+renderTable(dataParJourRaw, 'jour');
+
+// Changement du select
+document.getElementById('graphTypeLeft').addEventListener('change', function () {
+const type = this.value;
+if (type === 'jour') {
+renderChart(dataParJourRaw, 'jour');
+renderTable(dataParJourRaw, 'jour');
+} else if (type === 'mois') {
+renderChart(dataParMoisRaw, 'mois');
+renderTable(dataParMoisRaw, 'mois');
+} else if (type === 'categorie') {
+renderChart(dataParCategorieRaw, 'categorie');
+renderTable(dataParCategorieRaw, 'categorie');
+}
+});
+	</script>
+{% endblock %}

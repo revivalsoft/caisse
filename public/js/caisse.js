@@ -24,15 +24,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Helpers ---
-    const escapeHtml = s => s ? String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", "&#039;") : '';
+    const escapeHtml = s => s ? String(s)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", "&#039;") : '';
+
     const getTableButton = tableId => tablesSection.querySelector(`.btn-table[data-id="${tableId}"]`);
 
     const updateTableVisualState = tableId => {
         const btn = getTableButton(tableId);
         if (!btn) return;
         const badge = btn.querySelector('.table-badge');
-        const totalQty = Object.values(window.CAISSE.ticket[tableId] || {}).reduce((sum, item) => sum + Number(item.quantite || 0), 0);
-
+        const totalQty = Object.values(window.CAISSE.ticket[tableId] || {})
+            .reduce((sum, item) => sum + Number(item.quantite || 0), 0);
         if (totalQty > 0) {
             btn.classList.replace('btn-outline-primary', 'btn-warning');
             if (badge) { badge.textContent = totalQty; badge.classList.remove('d-none'); }
@@ -42,15 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const updateAllTableStates = () => tablesSection.querySelectorAll('.btn-table').forEach(b => updateTableVisualState(b.dataset.id));
+    const updateAllTableStates = () => tablesSection.querySelectorAll('.btn-table')
+        .forEach(b => updateTableVisualState(b.dataset.id));
 
-    // --- LocalStorage helpers avec timestamp ---
+    // --- LocalStorage helpers ---
     const persistTicket = tableId => {
         if (!tableId) return;
-        const data = {
-            timestamp: Date.now(),
-            ticket: window.CAISSE.ticket[tableId] || {}
-        };
+        const data = { timestamp: Date.now(), ticket: window.CAISSE.ticket[tableId] || {} };
         localStorage.setItem(`ticket_${tableId}`, JSON.stringify(data));
         updateTableVisualState(tableId);
     };
@@ -72,28 +76,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (key.startsWith('ticket_')) {
                 try {
                     const data = JSON.parse(localStorage.getItem(key));
-                    if (!data.timestamp || (now - data.timestamp) > maxAgeMs) {
-                        localStorage.removeItem(key);
-                    }
-                } catch (e) {
-                    localStorage.removeItem(key);
-                }
+                    if (!data.timestamp || (now - data.timestamp) > maxAgeMs) localStorage.removeItem(key);
+                } catch (e) { localStorage.removeItem(key); }
             }
         });
         console.log('Drafts locaux anciens nettoyés.');
     };
-
-    clearOldDrafts(7);
+    clearOldDrafts();
 
     // --- Debounce ---
     const debounce = (fn, delay) => {
         let timer;
-        return (...args) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => fn.apply(this, args), delay);
-        };
+        return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn.apply(this, args), delay); };
     };
-
     const saveDraft = debounce(tableId => {
         const ticketForTable = Object.values(window.CAISSE.ticket[tableId] || {});
         if (!ticketForTable.length) return;
@@ -130,8 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 total += Number(item.prixttc) * Number(item.quantite);
             });
             const hr = document.createElement('hr'); ticketDiv.appendChild(hr);
-            const totalDiv = document.createElement('div');
-            totalDiv.className = 'd-flex justify-content-between fw-bold';
+            const totalDiv = document.createElement('div'); totalDiv.className = 'd-flex justify-content-between fw-bold';
             totalDiv.innerHTML = `<div>Total</div><div>€ ${total.toFixed(2)}</div>`;
             ticketDiv.appendChild(totalDiv);
         }
@@ -143,11 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const modifyTicket = (tableId, prodId, action) => {
         window.CAISSE.ticket[tableId] = window.CAISSE.ticket[tableId] || {};
         const ticketForTable = window.CAISSE.ticket[tableId];
-
         switch (action) {
-            case 'inc':
-                if (ticketForTable[prodId]) ticketForTable[prodId].quantite++;
-                break;
+            case 'inc': if (ticketForTable[prodId]) ticketForTable[prodId].quantite++; break;
             case 'dec':
                 if (ticketForTable[prodId]) {
                     const q = ticketForTable[prodId].quantite - 1;
@@ -155,17 +146,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     else ticketForTable[prodId].quantite = q;
                 }
                 break;
-            case 'rm':
-                delete ticketForTable[prodId];
-                break;
+            case 'rm': delete ticketForTable[prodId]; break;
         }
         renderTicket();
     };
 
-    // --- Restore all tickets on load ---
-    tablesSection.querySelectorAll('.btn-table').forEach(btn => {
-        restoreTicket(btn.dataset.id);
-    });
+    // --- Restore tickets ---
+    tablesSection.querySelectorAll('.btn-table').forEach(btn => restoreTicket(btn.dataset.id));
     updateAllTableStates();
 
     // --- Table click ---
@@ -173,9 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = e.target.closest('.btn-table'); if (!btn) return;
         const tableId = btn.dataset.id;
         window.CAISSE.tableId = tableId;
-
         restoreTicket(tableId);
-
         tableNameDiv.textContent = btn.querySelector('.table-label')?.textContent?.trim() || `Table ${tableId}`;
         tablesSection.classList.add('d-none');
         categoriesSection.classList.remove('d-none');
@@ -184,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTicket();
     });
 
-    // --- Categories click ---
+    // --- Category click ---
     categoriesSection.addEventListener('click', e => {
         const btn = e.target.closest('.btn-cat'); if (!btn) return;
         document.querySelectorAll('[id^="cat-"]').forEach(d => d.classList.add('d-none'));
@@ -192,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (catDiv) catDiv.classList.remove('d-none');
     });
 
-    // --- Produits / actions ---
+    // --- Products click ---
     document.addEventListener('click', e => {
         const prodBtn = e.target.closest('.btn-produit');
         if (prodBtn) {
@@ -228,22 +213,14 @@ document.addEventListener('DOMContentLoaded', () => {
         tableNameDiv.textContent = '';
     });
 
-    // --- Save ticket final (local + serveur) ---
+    // --- Save & Print ---
     saveBtn.addEventListener('click', () => {
         const tableId = window.CAISSE.tableId;
-        if (!tableId) { alert('Aucune table sélectionnée.'); return; }
-
+        if (!tableId) return alert('Aucune table sélectionnée.');
         const ticketForTable = Object.values(window.CAISSE.ticket[tableId] || {});
-        if (!ticketForTable.length) { alert('Aucun produit sélectionné.'); return; }
+        if (!ticketForTable.length) return alert('Aucun produit sélectionné.');
 
-        const payload = {
-            tableId: tableId,
-            produits: ticketForTable.map(item => ({
-                id: item.id,
-                quantite: item.quantite
-            }))
-        };
-
+        const payload = { tableId, produits: ticketForTable.map(i => ({ id: i.id, quantite: i.quantite })) };
         fetch('/caisse/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -251,15 +228,115 @@ document.addEventListener('DOMContentLoaded', () => {
         })
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
-                    alert('✅ Commande enregistrée sur le serveur (ID ' + data.id + ')');
-                    window.CAISSE.ticket[tableId] = {};
-                    localStorage.removeItem(`ticket_${tableId}`);
-                    updateTableVisualState(tableId);
-                    renderTicket();
-                } else {
-                    alert('❌ Erreur serveur : ' + data.error);
-                }
+                if (!data.success) return alert('❌ Erreur serveur : ' + data.error);
+                const commandeId = data.id;
+                alert('✅ Commande enregistrée (ID ' + commandeId + ')');
+
+                const tableName = tableNameDiv.textContent.trim() || String(tableId);
+                const resto = window.RESTAURANT || { nom: "Restaurant", adresse: "", telephone: "", logo: "" };
+
+                // --- Print ticket ---
+                const printTicket = () => {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.position = 'absolute';
+                    iframe.style.left = '-9999px';
+                    document.body.appendChild(iframe);
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+
+                    // --- Style ---
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        @page{size:58mm auto;margin:0;}
+                        body{font-family:"Courier New",monospace;width:58mm;margin:0;padding:6px;}
+                        .center{text-align:center;}.bold{font-weight:bold;}.small{font-size:10px;}.hr{border-top:1px dashed #000;margin:4px 0;}
+                        .row{display:grid;grid-template-columns:1fr 10mm 18mm;column-gap:2mm;}.qty{text-align:center;}.price{text-align:right;}
+                        .tot{display:grid;grid-template-columns:1fr 28mm;margin-top:4px;}.tot .val{text-align:right;font-weight:bold;}
+                        .qr{text-align:center;margin-top:6px;}
+                        .logo{max-width:50mm;margin-bottom:4px;}
+                    `;
+                    doc.head.appendChild(style);
+
+                    const wrap = doc.createElement('div'); doc.body.appendChild(wrap);
+
+                    // --- Logo ---
+                    let pendingLoads = 0;
+                    const doPrint = () => {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                        setTimeout(() => document.body.removeChild(iframe), 1000);
+                    };
+
+                    if (resto.logo) {
+                        pendingLoads++;
+                        const divLogo = document.createElement('div'); divLogo.className = 'center';
+                        const img = document.createElement('img');
+                        img.src = resto.logo;
+                        img.className = 'logo';
+                        img.onload = () => {
+                            pendingLoads--;
+                            if (pendingLoads === 0) doPrint();
+                        };
+                        img.onerror = () => {
+                            console.warn('Erreur de chargement du logo:', resto.logo);
+                            pendingLoads--;
+                            if (pendingLoads === 0) doPrint();
+                        };
+                        divLogo.appendChild(img);
+                        wrap.appendChild(divLogo);
+                    }
+
+                    // --- Restaurant info ---
+                    const infoDiv = document.createElement('div');
+                    infoDiv.innerHTML = `
+                        <div class="center bold">${escapeHtml(resto.nom)}</div>
+                        ${resto.adresse ? `<div class="center small">${escapeHtml(resto.adresse)}</div>` : ''}
+                        ${resto.telephone ? `<div class="center small">${escapeHtml(resto.telephone)}</div>` : ''}
+                        <div class="center small">${escapeHtml(tableName)}</div>
+                        <div class="center small">Commande #${commandeId}</div>
+                        <div class="center small">${new Date().toLocaleString('fr-FR')}</div>
+                        <div class="hr"></div>
+                    `;
+                    wrap.appendChild(infoDiv);
+
+                    // --- Ticket items ---
+                    let total = 0;
+                    const wrapText = (txt, n) => {
+                        const out = []; let s = String(txt || '');
+                        while (s.length > n) { out.push(s.slice(0, n)); s = s.slice(n); }
+                        if (s) out.push(s); return out;
+                    };
+                    ticketForTable.forEach(item => {
+                        const qte = Number(item.quantite) || 0;
+                        const pu = Number(item.prixttc) || 0;
+                        const lineTotal = qte * pu;
+                        total += lineTotal;
+                        wrapText(item.nom, 22).forEach((line, idx) => {
+                            const row = doc.createElement('div'); row.className = 'row';
+                            row.innerHTML = `<div>${escapeHtml(line)}</div><div class="qty">${idx === 0 ? qte : ''}</div><div class="price">${idx === 0 ? '€' + lineTotal.toFixed(2) : ''}</div>`;
+                            wrap.appendChild(row);
+                        });
+                    });
+
+                    wrap.innerHTML += `
+                        <div class="hr"></div>
+                        <div class="tot"><div>Total</div><div class="val">€${total.toFixed(2)}</div></div>
+                        <div class="hr"></div>
+                        <div class="center small">Merci de votre visite !</div>
+                        <div class="qr"><canvas id="qr-code" width="100" height="100"></canvas></div>
+                    `;
+
+                    if (window.QRious) new QRious({ element: doc.getElementById('qr-code'), value: `CMD:${commandeId}`, size: 100 });
+
+                    // Si pas de chargements en attente, imprimer immédiatement
+                    if (pendingLoads === 0) doPrint();
+                };
+                printTicket();
+
+                // --- Reset local ---
+                window.CAISSE.ticket[tableId] = {};
+                localStorage.removeItem(`ticket_${tableId}`);
+                updateTableVisualState(tableId);
+                renderTicket();
             })
             .catch(err => {
                 console.error('Erreur fetch', err);
@@ -267,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     });
 
-    // --- Debug panel (optionnel) ---
+    // --- Debug panel ---
     if (window.CAISSE_DEBUG) {
         const panel = document.createElement('div');
         panel.style = 'position:fixed;bottom:10px;right:10px;width:300px;max-height:400px;overflow-y:auto;background:rgba(255,255,255,0.95);border:1px solid #ccc;border-radius:5px;padding:10px;font-size:12px;z-index:9999';
@@ -283,8 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const data = JSON.parse(localStorage.getItem(key));
                         const ticket = data.ticket || {};
                         const totalItems = Object.values(ticket).reduce((sum, item) => sum + (item.quantite || 0), 0);
-                        const div = document.createElement('div');
-                        div.style.marginBottom = '5px';
+                        const div = document.createElement('div'); div.style.marginBottom = '5px';
                         div.innerHTML = `<strong>${key.replace('ticket_', 'Table ')}</strong> : ${totalItems} produit(s)`;
                         container.appendChild(div);
                     } catch (e) { localStorage.removeItem(key); }

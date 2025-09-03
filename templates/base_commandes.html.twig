@@ -24,20 +24,6 @@
 			<!-- Bootstrap JS -->
 			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-			<script>
-				window.CAISSE = window.CAISSE || {};
-window.CAISSE.saveUrl = "{{ path('caisse_save') }}";
-			</script>
 
-			<script>
-				window.RESTAURANT = {
-nom: "{{ restaurant.nom|e('js') }}",
-adresse: "{{ restaurant.adresse|e('js') }}",
-telephone: "{{ restaurant.telephone|e('js') }}",
-logo: "{{ '/uploads/logos/' ~ restaurant.logo|e('js') }}"
-};
-			</script>
-
-			<script src="{{ asset('js/caisse.js') }}" defer></script>
 		</body>
 	</html>

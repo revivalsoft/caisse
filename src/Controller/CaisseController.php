@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\TableRestaurant;
+use App\Entity\Restaurant;
 use App\Entity\Produit;
 use App\Entity\Categorie;
 use App\Entity\Commande;
@@ -15,16 +16,20 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class CaisseController extends AbstractController
 {
-    //#[Route('/caisse/tables', name: 'caisse_tables', methods: ['GET'])]
+
     #[Route('/', name: 'caisse_tables', methods: ['GET'])]
     public function tables(EntityManagerInterface $em): Response
     {
         $tables = $em->getRepository(TableRestaurant::class)->findAll();
         $categories = $em->getRepository(Categorie::class)->findAll();
 
+        $restaurant = $em->getRepository(Restaurant::class)->findOneBy([]);
+
+
         return $this->render('caisse/table.html.twig', [
             'tables' => $tables,
-            'categories' => $categories
+            'categories' => $categories,
+            'restaurant' => $restaurant,
         ]);
     }
 
