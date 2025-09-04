@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Service\ReportingService;
-use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,24 +19,24 @@ class ReportingController extends AbstractController
         $startStr = $request->query->get('start');
         $endStr   = $request->query->get('end');
 
-        // $startDate = $startStr ? new DateTimeImmutable($startStr) : null;
-        // $endDate   = $endStr ? new DateTimeImmutable($endStr) : null;
-
         [$startDate, $endDate] = $this->adjustDateRange($startStr, $endStr);
 
-
+        // Récupération des totaux depuis les lignes immuables
         $totaux = $this->reportingService->getTotaux($startDate, $endDate);
 
         return $this->render('reporting/index.html.twig', [
-            'totauxParJour' => $totaux['parJour'],
-            'totauxParMois' => $totaux['parMois'],
-            'totauxParCategorie' => $totaux['parCategorie'],
-            'totalGlobal' => $totaux['global'],
-            'start' => $startDate?->format('Y-m-d'),
-            'end' => $endDate?->format('Y-m-d'),
+            'totauxParJour'       => $totaux['parJour'],
+            'totauxParMois'       => $totaux['parMois'],
+            'totauxParCategorie'  => $totaux['parCategorie'],
+            'totalGlobal'         => $totaux['global'],
+            'start'               => $startDate?->format('Y-m-d'),
+            'end'                 => $endDate?->format('Y-m-d'),
         ]);
     }
 
+    /**
+     * Ajuste les dates pour inclure toute la journée
+     */
     private function adjustDateRange(?string $startStr, ?string $endStr): array
     {
         $start = $startStr ? new \DateTimeImmutable($startStr . ' 00:00:00') : null;

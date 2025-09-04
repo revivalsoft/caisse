@@ -25,21 +25,25 @@ class ReportingService
             $jour = $commande->getDate()->format('Y-m-d');
             $mois = $commande->getDate()->format('Y-m');
 
-            foreach ($commande->getProduits() as $produit) {
-                $qte = $commande->getQuantites()[$produit->getId()] ?? 1;
-                $ht = $produit->getPrixHT() * $qte;
-                $ttc = $produit->getPrixTTC() * $qte;
+            // Parcours des lignes de commande
+            foreach ($commande->getLignes() as $ligne) {
+                $qte = $ligne->getQuantite();
+                $ht = $ligne->getPrixHT() * $qte;
 
-                // Par jour
+                // Calcul du TTC selon le taux de TVA
+                $tauxTva = $ligne->getTauxTva(); // ex: 20 pour 20%
+                $ttc = $ht * (1 + $tauxTva / 100);
+
+                // Totaux par jour
                 $totauxParJour[$jour]['HT'] = ($totauxParJour[$jour]['HT'] ?? 0) + $ht;
                 $totauxParJour[$jour]['TTC'] = ($totauxParJour[$jour]['TTC'] ?? 0) + $ttc;
 
-                // Par mois
+                // Totaux par mois
                 $totauxParMois[$mois]['HT'] = ($totauxParMois[$mois]['HT'] ?? 0) + $ht;
                 $totauxParMois[$mois]['TTC'] = ($totauxParMois[$mois]['TTC'] ?? 0) + $ttc;
 
-                // Par catégorie
-                $cat = $produit->getCategorie()?->getNom() ?? 'Sans catégorie';
+                // Totaux par catégorie (libellé stocké dans la ligne)
+                $cat = $ligne->getCategorieLibelle() ?? 'Sans catégorie';
                 $totauxParCategorie[$cat]['HT'] = ($totauxParCategorie[$cat]['HT'] ?? 0) + $ht;
                 $totauxParCategorie[$cat]['TTC'] = ($totauxParCategorie[$cat]['TTC'] ?? 0) + $ttc;
 

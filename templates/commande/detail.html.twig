@@ -35,14 +35,13 @@
 			</thead>
 			<tbody>
 				{% set totalTTC = 0 %}
-				{% for produit in commande.produits %}
-					{% set quantite = commande.quantites[produit.id] ?? 1 %}
-					{% set prixTTC = produit.prixHT * (1 + produit.tauxTva.taux / 100) %}
-					{% set totalProduit = prixTTC * quantite %}
+				{% for ligne in commande.lignes %}
+					{% set prixTTC = ligne.prixHT * (1 + ligne.tauxTva / 100) %}
+					{% set totalProduit = prixTTC * ligne.quantite %}
 					{% set totalTTC = totalTTC + totalProduit %}
 					<tr>
-						<td>{{ produit.nom }}</td>
-						<td>{{ quantite }}</td>
+						<td>{{ ligne.libelleProduit }}</td>
+						<td>{{ ligne.quantite }}</td>
 						<td>€
 							{{ prixTTC|number_format(2, ',', ' ') }}</td>
 						<td>€

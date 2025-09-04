@@ -16,26 +16,36 @@ class Commande
     #[ORM\JoinColumn(nullable: false)]
     private ?TableRestaurant $table = null;
 
-    #[ORM\ManyToMany(targetEntity: Produit::class)]
-    private Collection $produits;
-
-    #[ORM\Column(type: "json", nullable: true)]
-    private array $quantites = [];
+    #[ORM\OneToMany(mappedBy: "commande", targetEntity: CommandeLigne::class, cascade: ["persist", "remove"])]
+    private Collection $lignes;
 
     #[ORM\Column(type: "datetime")]
     private ?\DateTimeInterface $date = null;
 
     public function __construct()
     {
-        $this->produits = new ArrayCollection();
+        $this->lignes = new ArrayCollection();
         $this->date = new \DateTimeImmutable();
+    }
+
+    public function addLigne(CommandeLigne $ligne): self
+    {
+        if (!$this->lignes->contains($ligne)) {
+            $this->lignes->add($ligne);
+            $ligne->setCommande($this);
+        }
+        return $this;
+    }
+
+    public function getLignes(): Collection
+    {
+        return $this->lignes;
     }
 
     public function getId(): ?int
     {
         return $this->id;
     }
-
     public function getTable(): ?TableRestaurant
     {
         return $this->table;
@@ -45,23 +55,6 @@ class Commande
         $this->table = $table;
         return $this;
     }
-
-    public function getProduits(): Collection
-    {
-        return $this->produits;
-    }
-    public function addProduit(Produit $produit, int $quantite = 1): self
-    {
-        if (!$this->produits->contains($produit)) $this->produits->add($produit);
-        $this->quantites[$produit->getId()] = $quantite;
-        return $this;
-    }
-
-    public function getQuantites(): array
-    {
-        return $this->quantites;
-    }
-
     public function getDate(): ?\DateTimeInterface
     {
         return $this->date;
@@ -70,5 +63,21 @@ class Commande
     {
         $this->date = $date;
         return $this;
+    }
+
+    // Méthodes pratiques pour reporting
+    public function getTotalHt(): float
+    {
+        return array_sum(array_map(fn($l) => $l->getPrixHt() * $l->getQuantite(), $this->lignes->toArray()));
+    }
+
+    public function getTotalTva(): float
+    {
+        return array_sum(array_map(fn($l) => ($l->getPrixHt() * $l->getQuantite()) * ($l->getTauxTva() / 100), $this->lignes->toArray()));
+    }
+
+    public function getTotalTtc(): float
+    {
+        return $this->getTotalHt() + $this->getTotalTva();
     }
 }

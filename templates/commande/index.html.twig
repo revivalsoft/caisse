@@ -7,7 +7,7 @@
 	<div class="container mt-4">
 		<h1 class="mb-4">Liste des Commandes</h1>
 
-		<!-- ✅ Filtrage -->
+		<!-- Filtrage -->
 		<form method="get" class="row g-3 mb-4">
 			<div class="col-md-4">
 				<input type="date" name="date" class="form-control" value="{{ selected_date }}">
@@ -29,11 +29,10 @@
 			</div>
 		</form>
 
-		<!-- ✅ Table des commandes -->
+		<!-- Table des commandes -->
 		<table class="table table-striped table-hover">
 			<thead class="table-dark">
 				<tr>
-
 					<th>Table</th>
 					<th>Date</th>
 					<th>Produits</th>
@@ -43,13 +42,14 @@
 			<tbody>
 				{% for commande in pagination %}
 					<tr>
-
-						<td>
-							{{ commande.table.nom }}</td>
+						<td>{{ commande.table.nom }}</td>
 						<td>{{ commande.date|date('d/m/Y H:i') }}</td>
 						<td>
-							{% for produit in commande.produits %}
-								<span class="badge bg-info">{{ produit.nom }}</span>
+							{% for ligne in commande.lignes %}
+								<span class="badge bg-info">
+									{{ ligne.libelleProduit }}
+									(x{{ ligne.quantite }})
+								</span>
 							{% endfor %}
 						</td>
 						<td>
@@ -60,16 +60,15 @@
 					</tr>
 				{% else %}
 					<tr>
-						<td colspan="5" class="text-center">Aucune commande trouvée.</td>
+						<td colspan="4" class="text-center">Aucune commande trouvée.</td>
 					</tr>
 				{% endfor %}
 			</tbody>
 		</table>
 
-		<!-- ✅ Pagination -->
+		<!-- Pagination -->
 		<div class="d-flex justify-content-center">
 			{{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig') }}
 		</div>
-
 	</div>
 {% endblock %}

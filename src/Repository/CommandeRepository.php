@@ -16,13 +16,11 @@ class CommandeRepository extends ServiceEntityRepository
     /**
      * Récupère les commandes entre deux dates
      */
-    public function findCommandesBetween(\DateTimeInterface $start = null, \DateTimeInterface $end = null): array
+    public function findCommandesBetween(\DateTimeImmutable $start = null, \DateTimeImmutable $end = null): array
     {
         $qb = $this->createQueryBuilder('c')
-            ->join('c.produits', 'p')
-            ->addSelect('p')
-            ->join('p.tauxTva', 't')
-            ->addSelect('t');
+            ->join('c.lignes', 'l') // si tu passes sur CommandeLigne
+            ->addSelect('l');
 
         if ($start && $end) {
             $qb->where('c.date BETWEEN :start AND :end')

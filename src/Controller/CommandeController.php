@@ -28,7 +28,7 @@ class CommandeController extends AbstractController
         $queryBuilder = $commandeRepository->createQueryBuilder('c')
             ->orderBy('c.date', 'DESC');
 
-        // ✅ Filtrage par date (sans DATE())
+        // Filtrage par date
         if ($date) {
             $start = new \DateTime($date);
             $end = (clone $start)->modify('+1 day');
@@ -40,14 +40,14 @@ class CommandeController extends AbstractController
                 ->setParameter('end', $end);
         }
 
-        // ✅ Filtrage par table
+        // Filtrage par table
         if ($tableId) {
             $queryBuilder
                 ->andWhere('c.table = :table')
                 ->setParameter('table', $tableId);
         }
 
-        // ✅ Pagination
+        // Pagination
         $pagination = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1),
@@ -66,90 +66,52 @@ class CommandeController extends AbstractController
     public function detail(CommandeRepository $commandeRepository, int $id): Response
     {
         $commande = $commandeRepository->find($id);
-
         if (!$commande) {
             throw $this->createNotFoundException('Commande non trouvée.');
         }
 
+        // Préparer les items à afficher depuis les lignes
+        $items = [];
+        foreach ($commande->getLignes() as $ligne) {
+            $prixTTC = $ligne->getPrixHt() * (1 + $ligne->getTauxTva() / 100);
+            $items[] = [
+                'nom' => $ligne->getLibelleProduit(),
+                'quantite' => $ligne->getQuantite(),
+                'prix' => $prixTTC,
+                'categorie' => $ligne->getCategorieLibelle(),
+            ];
+        }
+
         return $this->render('commande/detail.html.twig', [
             'commande' => $commande,
+            'items' => $items,
         ]);
     }
 
-    // #[Route('/commande/{id}/reimprimer', name: 'app_commande_reimprimer')]
-    // public function reimprimer(
-    //     CommandeRepository $commandeRepository,
-    //     TicketPrinter $ticketPrinter,
-    //     int $id,
-    //     EntityManagerInterface $em,
-    //     Request $request
-    // ): Response {
-    //     $commande = $commandeRepository->find($id);
-    //     if (!$commande) {
-    //         throw $this->createNotFoundException('Commande non trouvée.');
-    //     }
-
-    //     $items = [];
-    //     foreach ($commande->getProduits() as $produit) {
-    //         $items[] = [
-    //             'nom' => $produit->getNom(),
-    //             'quantite' => $commande->getQuantites()[$produit->getId()] ?? 1,
-    //             'prix' => $produit->getPrixHT(),
-    //         ];
-    //     }
-
-    //     $restaurant = $em->getRepository(Restaurant::class)->findOneBy([]);
-
-    //     $header = [
-    //         'nom' => $restaurant->getNom(),
-    //         'adresse' => $restaurant->getAdresse(),
-    //         'telephone' => $restaurant->getTelephone(),
-
-    //     ];
-
-    //     $ticketPrinter->printTicket([
-    //         'id' => $commande->getId(),
-    //         'date' => $commande->getDate(),
-    //         'items' => $items,
-    //         'header' => $header
-    //     ]);
-
-    //     // Message de confirmation
-    //     $msg = $this->getParameter('kernel.environment') === 'prod'
-    //         ? 'Ticket envoyé à l’imprimante !'
-    //         : 'Ticket simulé en PDF (dev) !';
-
-    //     $this->addFlash('success', $msg);
-
-    //     return $this->redirectToRoute('app_commande_detail', ['id' => $id]);
-    // }
     #[Route('/commande/{id}/reimprimer', name: 'app_commande_reimprimer')]
     public function reimprimer(
         CommandeRepository $commandeRepository,
         TicketPrinter $ticketPrinter,
         int $id,
-        EntityManagerInterface $em,
-        Request $request
+        EntityManagerInterface $em
     ): Response {
         $commande = $commandeRepository->find($id);
         if (!$commande) {
             throw $this->createNotFoundException('Commande non trouvée.');
         }
 
+        // Préparer les items à envoyer à l'imprimante
         $items = [];
-        foreach ($commande->getProduits() as $produit) {
-            $tva = $produit->getTauxTva()->getTaux(); // ex: 20
-            $prixTTC = $produit->getPrixHT() * (1 + $tva / 100);
-
+        foreach ($commande->getLignes() as $ligne) {
+            $prixTTC = $ligne->getPrixHt() * (1 + $ligne->getTauxTva() / 100);
             $items[] = [
-                'nom' => $produit->getNom(),
-                'quantite' => $commande->getQuantites()[$produit->getId()] ?? 1,
-                'prix' => $prixTTC, // ✅ prix TTC au lieu de HT
+                'nom' => $ligne->getLibelleProduit(),
+                'quantite' => $ligne->getQuantite(),
+                'prix' => $prixTTC,
             ];
         }
 
         $restaurant = $em->getRepository(Restaurant::class)->findOneBy([]);
-
         $header = [
             'nom' => $restaurant->getNom(),
             'adresse' => $restaurant->getAdresse(),

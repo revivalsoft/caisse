@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\TableRestaurant;
+use App\Entity\CommandeLigne;
 use App\Entity\Restaurant;
 use App\Entity\Produit;
 use App\Entity\Categorie;
@@ -36,28 +37,47 @@ class CaisseController extends AbstractController
     #[Route('/caisse/save', name: 'caisse_save', methods: ['POST'])]
     public function saveTicket(Request $request, EntityManagerInterface $em): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        if (!isset($data['tableId']) || !isset($data['produits'])) {
-            return new JsonResponse(['success' => false, 'error' => 'Données manquantes']);
-        }
-
-        $table = $em->getRepository(TableRestaurant::class)->find($data['tableId']);
-        if (!$table) return new JsonResponse(['success' => false, 'error' => 'Table introuvable']);
-
-        $commande = new Commande();
-        $commande->setTable($table);
-
-        foreach ($data['produits'] as $p) {
-            $produit = $em->getRepository(Produit::class)->find($p['id']);
-            if ($produit) {
-                $commande->addProduit($produit, $p['quantite']);
+        try {
+            $data = json_decode($request->getContent(), true);
+            if (!isset($data['tableId']) || !isset($data['produits']) || !is_array($data['produits'])) {
+                return new JsonResponse(['success' => false, 'error' => 'Données manquantes ou invalides']);
             }
+
+            $table = $em->getRepository(TableRestaurant::class)->find($data['tableId']);
+            if (!$table) {
+                return new JsonResponse(['success' => false, 'error' => 'Table introuvable']);
+            }
+
+            $commande = new Commande();
+            $commande->setTable($table);
+
+            foreach ($data['produits'] as $p) {
+                $produit = $em->getRepository(Produit::class)->find($p['id']);
+                if (!$produit) continue; // Ignore les produits introuvables
+
+                $ligne = new CommandeLigne();
+                $ligne->setCommande($commande);
+                $ligne->setLibelleProduit($produit->getNom());
+                $ligne->setPrixHt($produit->getPrixHt());
+                $ligne->setTauxTva($produit->getTauxtva()?->getTaux() ?? 0); // <-- correction TVA
+                $ligne->setQuantite($p['quantite'] ?? 1);
+                $ligne->setCategorieLibelle($produit->getCategorie()?->getNom() ?? '');
+                $ligne->setProduitId($produit->getId());
+
+                $commande->addLigne($ligne);
+                $em->persist($ligne);
+            }
+
+            $em->persist($commande);
+            $em->flush();
+
+            return new JsonResponse(['success' => true, 'id' => $commande->getId()]);
+        } catch (\Throwable $e) {
+            // Capture toutes les exceptions et renvoie un JSON
+            return new JsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
         }
-
-        $em->persist($commande);
-        $em->flush();
-
-        return new JsonResponse(['success' => true, 'id' => $commande->getId()]);
     }
 }
